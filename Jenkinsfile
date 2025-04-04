@@ -6,12 +6,24 @@ pipeline {
                 checkout scm
             }
         }
+
         stage('Test') {
             steps {
                 sh './mvnw test'
-                junit 'target/surefire-reports/*.xml'
+            }
+            post {
+                always {
+                    junit '*/target/surefire-reports/*.xml'
+                }
             }
         }
+
+        stage('Coverage') {
+            steps {
+                sh './mvnw verify'
+            }
+        }
+
         stage('Build') {
             steps {
                 sh './mvnw package'
