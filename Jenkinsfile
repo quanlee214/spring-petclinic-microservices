@@ -6,28 +6,27 @@ pipeline {
                 checkout scm
             }
         }
-
         stage('Test') {
             steps {
-                sh './mvnw test'
-            }
-            post {
-                always {
-                    junit '*/target/surefire-reports/*.xml'
-                }
+                sh './mvnw clean verify'
             }
         }
-
-        stage('Coverage') {
-            steps {
-                sh './mvnw verify'
-            }
-        }
-
         stage('Build') {
             steps {
                 sh './mvnw package'
             }
+        }
+    }
+    post {
+        always {
+            // ✅ Upload kết quả test
+            junit '**/target/surefire-reports/*.xml'
+            
+            // ✅ Upload coverage (nếu đã cài JaCoCo plugin)
+            jacoco execPattern: '**/target/jacoco.exec',
+                   classPattern: '**/target/classes',
+                   sourcePattern: '**/src/main/java',
+                   inclusionPattern: '**/*.class'
         }
     }
 }
