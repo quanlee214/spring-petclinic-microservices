@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKER_USERNAME = 'quanle214'
+        DOCKERHUB_USERNAME = 'quanlee214'
         IMAGE_TAG = "${GIT_COMMIT.take(7)}"
     }
 
