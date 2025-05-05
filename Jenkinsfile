@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = 'quanle214'
-        DOCKERHUB_USERNAME = 'quanlee214'
+        DOCKERHUB_USERNAME = 'quanle214'
         IMAGE_TAG = "${GIT_COMMIT.take(7)}"
     }
 
@@ -33,44 +32,33 @@ pipeline {
         stage('Build and Package Services') {
             steps {
                 script {
+                    // Danh sách dịch vụ: module name, jar tên rút gọn, cổng
                     def services = [
-                        [name: 'spring-petclinic-vets-service', port: 8081],
-                        [name: 'spring-petclinic-customers-service', port: 8082]
-                        // thêm service khác vào đây nếu cần
+                        [module: 'spring-petclinic-vets-service', shortName: 'vets-service', port: 8081],
+                        [module: 'spring-petclinic-customers-service', shortName: 'customers-service', port: 8082]
+                        // Thêm dịch vụ khác nếu cần
                     ]
 
                     for (svc in services) {
-                        def jarModule = svc.name
-                        def jarBaseName = jarModule.replace('spring-petclinic-', '')
-                        def dockerJarPath = "docker/${jarBaseName}.jar"
+                        def jarPathPattern = "${svc.module}/target/${svc.module}-*.jar"
+                        def finalJar = sh(script: "ls ${jarPathPattern} | grep -v original | head -n 1", returnStdout: true).trim()
+                        def dockerJarPath = "docker/${svc.shortName}.jar"
 
-                        echo "▶️ Building ${svc.name}..."
+                        echo "▶️ Building ${svc.module}..."
 
                         // Build ứng dụng
-                        sh "./mvnw -pl ${jarModule} -am clean package -DskipTests"
-
-                        // Tìm file jar build ra
-                        def jarPath = sh(
-                            script: "ls ${jarModule}/target/${jarModule}-*.jar | grep -v original | head -n 1",
-                            returnStdout: true
-                        ).trim()
-
-                        if (!jarPath) {
-                            error "❌ Không tìm thấy file jar trong ${jarModule}/target/. Kiểm tra lại quá trình build!"
-                        }
-
-                        echo "🔍 Found JAR path: ${jarPath}"
+                        sh "./mvnw -pl ${svc.module} -am clean package -DskipTests"
 
                         // Copy jar vào thư mục docker
-                        sh "cp ${jarPath} ${dockerJarPath}"
+                        sh "cp ${finalJar} ${dockerJarPath}"
 
-                        echo "🐳 Building Docker image for ${svc.name}..."
+                        echo "🐳 Building Docker image for ${svc.shortName}..."
                         sh """
                             docker build \
-                                --build-arg ARTIFACT_NAME=${jarBaseName} \
+                                --build-arg ARTIFACT_NAME=${svc.shortName} \
                                 --build-arg EXPOSED_PORT=${svc.port} \
                                 -f docker/Dockerfile \
-                                -t ${DOCKERHUB_USERNAME}/${jarBaseName}:${IMAGE_TAG} \
+                                -t ${DOCKERHUB_USERNAME}/${svc.shortName}:${IMAGE_TAG} \
                                 docker/
                         """
                     }
@@ -80,13 +68,13 @@ pipeline {
 
         stage('Push Docker Images') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-        
+
                         def services = ['vets-service', 'customers-service']
                         for (svc in services) {
-                            def image = "${DOCKER_USER}/${svc}:${IMAGE_TAG}"
+                            def image = "${DOCKERHUB_USERNAME}/${svc}:${IMAGE_TAG}"
                             echo "📤 Pushing ${image}"
                             sh "docker push ${image}"
                         }
