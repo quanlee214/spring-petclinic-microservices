@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_REPO = 'quanle214'
+        DOCKERHUB_USERNAME = 'quanle214'
+        IMAGE_TAG = "${GIT_COMMIT.take(7)}"
     }
 
     parameters {
@@ -28,17 +29,48 @@ pipeline {
             }
         }
 
-        stage('Build & Push Docker images') {
+        stage('Build and Package Services') {
             steps {
                 script {
-                    def services = ['vets-service', 'customers-service', 'visits-service'] 
+                    def services = [
+                        [name: 'spring-petclinic-vets-service', port: 8081],
+                        [name: 'spring-petclinic-customers-service', port: 8082]
+                        // bạn thêm services khác nếu cần
+                    ]
+
                     for (svc in services) {
-                        dir(svc) {
-                            sh """
-                                echo "🚧 Building ${svc} with tag ${IMAGE_TAG}..."
-                                docker build -t ${IMAGE_REPO}/${svc}:${IMAGE_TAG} .
-                                docker push ${IMAGE_REPO}/${svc}:${IMAGE_TAG}
-                            """
+                        def jarModule = svc.name
+                        def jarBaseName = jarModule.replace('spring-petclinic-', '')
+                        def jarName = "${jarModule}/target/${jarModule}-0.0.1-SNAPSHOT"
+
+                        echo "▶️ Building ${svc.name}..."
+
+                        sh "./mvnw -pl ${jarModule} -am clean package -DskipTests"
+
+                        echo "🐳 Building Docker image for ${svc.name}..."
+                        sh """
+                            docker build \
+                                --build-arg ARTIFACT_NAME=${jarName} \
+                                --build-arg EXPOSED_PORT=${svc.port} \
+                                -f docker/Dockerfile \
+                                -t ${DOCKERHUB_USERNAME}/${jarBaseName}:${IMAGE_TAG} .
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Images') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'jenkins-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    script {
+                        sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+
+                        def services = ['vets-service', 'customers-service']
+                        for (svc in services) {
+                            def image = "${DOCKERHUB_USERNAME}/${svc}:${IMAGE_TAG}"
+                            echo "📤 Pushing ${image}"
+                            sh "docker push ${image}"
                         }
                     }
                 }
