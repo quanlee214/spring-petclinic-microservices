@@ -41,7 +41,10 @@ pipeline {
                     for (svc in services) {
                         def jarModule = svc.name
                         def jarBaseName = jarModule.replace('spring-petclinic-', '')
-                        def jarPath = "${jarModule}/target/${jarModule}-0.0.1-SNAPSHOT.jar"
+                        def jarPath = sh(
+                            script: "ls ${jarModule}/target/${jarModule}-*.jar | grep -v original | head -n 1",
+                            returnStdout: true
+                        ).trim()
                         def dockerJarPath = "docker/${jarBaseName}.jar"
 
                         echo "▶️ Building ${svc.name}..."
