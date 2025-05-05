@@ -86,7 +86,7 @@ pipeline {
         
                         def services = ['vets-service', 'customers-service']
                         for (svc in services) {
-                            def image = "${DOCKER_USER}/${svc}:${IMAGE_TAG}"
+                            def image = "${DOCKERHUB_USERNAME}/${svc}:${IMAGE_TAG}"
                             echo "📤 Pushing ${image}"
                             sh "docker push ${image}"
                         }
