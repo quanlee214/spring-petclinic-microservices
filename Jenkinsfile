@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_USERNAME = 'quanle214'
+        DOCKER_USERNAME = 'quanle214'
         IMAGE_TAG = "${GIT_COMMIT.take(7)}"
     }
 
