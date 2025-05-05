@@ -35,25 +35,31 @@ pipeline {
                     def services = [
                         [name: 'spring-petclinic-vets-service', port: 8081],
                         [name: 'spring-petclinic-customers-service', port: 8082]
-                        // bạn thêm services khác nếu cần
+                        // bạn có thể thêm service khác vào đây nếu cần
                     ]
 
                     for (svc in services) {
                         def jarModule = svc.name
                         def jarBaseName = jarModule.replace('spring-petclinic-', '')
-                        def jarName = "${jarModule}/target/${jarModule}-0.0.1-SNAPSHOT"
+                        def jarPath = "${jarModule}/target/${jarModule}-0.0.1-SNAPSHOT.jar"
+                        def dockerJarPath = "docker/${jarBaseName}.jar"
 
                         echo "▶️ Building ${svc.name}..."
 
+                        // Build ứng dụng
                         sh "./mvnw -pl ${jarModule} -am clean package -DskipTests"
+
+                        // Copy jar vào thư mục docker
+                        sh "cp ${jarPath} ${dockerJarPath}"
 
                         echo "🐳 Building Docker image for ${svc.name}..."
                         sh """
                             docker build \
-                                --build-arg ARTIFACT_NAME=${jarName} \
+                                --build-arg ARTIFACT_NAME=${jarBaseName} \
                                 --build-arg EXPOSED_PORT=${svc.port} \
                                 -f docker/Dockerfile \
-                                -t ${DOCKERHUB_USERNAME}/${jarBaseName}:${IMAGE_TAG} .
+                                -t ${DOCKERHUB_USERNAME}/${jarBaseName}:${IMAGE_TAG} \
+                                docker/
                         """
                     }
                 }
