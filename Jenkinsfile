@@ -80,13 +80,13 @@ pipeline {
 
         stage('Push Docker Images') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'jenkins-docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
-
+        
                         def services = ['vets-service', 'customers-service']
                         for (svc in services) {
-                            def image = "${DOCKERHUB_USERNAME}/${svc}:${IMAGE_TAG}"
+                            def image = "${DOCKER_USER}/${svc}:${IMAGE_TAG}"
                             echo "📤 Pushing ${image}"
                             sh "docker push ${image}"
                         }
