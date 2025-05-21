@@ -43,7 +43,8 @@ pipeline {
             steps {
                 script {
                     def branches = [:]
-                    echo whoami
+                    def currentUser = sh(script: 'whoami', returnStdout: true).trim()
+                    echo "Current user: ${currentUser}"
                     globalServiceChanged.each { svc ->
                         branches[svc] = {
                             dir("${svc}") {
