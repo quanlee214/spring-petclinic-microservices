@@ -36,6 +36,7 @@ pipeline {
                 }
             }
         }
+
         stage('Build & Push Docker Images') {
             when {
                 expression { globalServiceChanged.size() > 0 }
@@ -43,7 +44,6 @@ pipeline {
             steps {
                 script {
                     def branches = [:]
-                    sh 'whoami'
                     globalServiceChanged.each { svc ->
                         branches[svc] = {
                             dir("${svc}") {
@@ -51,18 +51,26 @@ pipeline {
                                 echo "Building image: ${imageTag}"
                                 sh '../mvnw clean install -P buildDocker -DskipTests'
                                 sh "docker tag springcommunity/${svc}:latest ${imageTag}"
-                                echo "Pushing image: ${imageTag}"
-                                sh "docker push ${imageTag}"
+
+                                // 💥 Thêm docker login tại đây
+                                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                                    sh """
+                                        echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin
+                                        echo "Pushing image: ${imageTag}"
+                                        docker push ${imageTag}
+                                    """
+                                }
                             }
                         }
                     }
-        
+
                     // Run in parallel
                     parallel branches
                 }
             }
         }
     }
+
     post {
         success {
             echo "Build, push, and deploy completed for: ${globalServiceChanged}"
