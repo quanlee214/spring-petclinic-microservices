@@ -68,12 +68,12 @@
         <profile>
             <id>buildDocker</id>
             <build>
-                <plugins>
+                <plugins>  
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
                     </plugin>
-                </plugins>
+                </plugins>   
             </build>
         </profile>
     </profiles>
