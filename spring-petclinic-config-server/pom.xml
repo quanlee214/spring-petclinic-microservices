@@ -27,7 +27,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring Cloud -->
+        <!-- Spring C loud -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-server</artifactId>

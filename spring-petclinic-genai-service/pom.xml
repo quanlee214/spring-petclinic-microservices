@@ -21,7 +21,7 @@
     </properties>
 
 	<dependencies>
-        <!-- Spring Boot -->
+        <!-- Spring Bo   ot -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
