@@ -52,7 +52,7 @@
             <version>${spring-boot-admin.version}</version>
         </dependency>
 
-        <!-- Third-party librairies -->
+        <!-- Third -party librairies -->
         <dependency>
             <groupId>org.jolokia</groupId>
             <artifactId>jolokia-core</artifactId>

@@ -20,7 +20,7 @@
     </properties>
 
     <dependencies>
-        <!-- Spri  ng Boo   t -->
+        <!-- Spri  ng B oo   t -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>

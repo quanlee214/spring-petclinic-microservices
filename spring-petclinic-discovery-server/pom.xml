@@ -37,7 +37,7 @@
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
-        <!-- JAXB is required since Java 9 -->
+        <!-- JAXB is requ ired since Java 9 -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
@@ -55,7 +55,7 @@
 
 
 
-                        
+
                     </plugin>
                 </plugins>
             </build>

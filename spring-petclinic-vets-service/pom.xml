@@ -20,7 +20,7 @@
     </properties>
 
 	<dependencies>
-        <!-- Spri   ng B  oot -->
+        <!-- Sp ri   ng B  oot -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>

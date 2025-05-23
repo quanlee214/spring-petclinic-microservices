@@ -27,7 +27,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Spring Clo   ud -->
+        <!-- Sp ring Clo   ud -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-config-server</artifactId>
